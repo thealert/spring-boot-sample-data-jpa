@@ -1,0 +1,8 @@
+{
+  "lives": [
+    {
+      "name": "M3U",
+      "url": "https://gh.idayer.com/https://raw.githubusercontent.com/thealert/spring-boot-sample-data-jpa/master/lnty.m3u"
+    }
+  ]
+}
