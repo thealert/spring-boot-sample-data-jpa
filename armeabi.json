@@ -16,8 +16,8 @@
             "name": "hulu_screenRecord"
         },
         {
-            "url": "https://github.com/thealert/spring-boot-sample-data-jpa/raw/master/hulu_minicap_8.zip",
-            "version": 8,
+            "url": "https://github.com/thealert/spring-boot-sample-data-jpa/raw/master/hulu_minicap_9.zip",
+            "version": 9,
             "type": "base",
             "name": "minicap"
         },
