@@ -9,3 +9,5 @@ http://cd.sy012.com:4000/rtp/232.0.0.66:8820
 http://fxgm.fxjf.work:19901/tsfile/live/1003_1.m3u8
 #EXTINF:-1 tvg-id="6007" tvg-name="辽宁体育" tvg-logo="http://epg.51zmt.top:8000/tb1/qt/LNTV-SPORT.png" group-title="辽宁",辽宁体育new1
 http://59.44.192.82:65000/hls/24/index.m3u8
+#EXTINF:-1 tvg-id="6007" tvg-name="辽宁体育" tvg-logo="http://epg.51zmt.top:8000/tb1/qt/LNTV-SPORT.png" group-title="辽宁",辽宁体育x1
+http://59.44.102.18:8888/newlive/live/hls/45/live.m3u8
