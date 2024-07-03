@@ -5,3 +5,9 @@ http://59.44.102.18:8888/newlive/live/hls/48/live.m3u8
 http://xyt.186738613.xyz/lngd.php?id=611&Cf.m3u8
 #EXTINF:-1 tvg-id="6007" tvg-name="辽宁体育" tvg-logo="http://epg.51zmt.top:8000/tb1/qt/LNTV-SPORT.png" group-title="辽宁",辽宁体育T3
 http://123.189.36.39:9901/tsfile/live/1023_1.m3u8?key=txiptv&playlive=1&authid=0
+#EXTINF:-1 ,锦州新闻
+http://stream.jzgbdst.cn/1/sd/live.m3u8?_upt=8842ef681578202947
+#EXTINF:-1 ,锦州2
+http://stream.jzgbdst.cn/2/sd/live.m3u8?_upt=07cad3811578202958
+#EXTINF:-1 ,锦州3
+http://stream.jzgbdst.cn/3/sd/live.m3u8?_upt=b7c414761578202967
