@@ -9,6 +9,8 @@ http://123.189.36.39:9901/tsfile/live/1023_1.m3u8?key=txiptv&playlive=1&authid=0
 http://xyt.186738613.xyz/lngd.php?id=611&Cf.m3u8
 #EXTINF:-1 tvg-id="cctv5+" tvg-name="CCTV5+" tvg-logo="http://www.peterealty.com/tv_logos/cctv5.jpg" group-title="CCTV",CCTV5+
 http://[2409:8087:4c0a:22:1::11]:6410/170000001115/UmaiCHAN63872908d48f9/index.m3u8?m3u8_level=2
+#EXTINF:-1 tvg-id="cctv516" tvg-name="CCTV16" tvg-logo="http://www.peterealty.com/tv_logos/cctv16.jpg" group-title="CCTV",CCTV16
+http://[2409:8087:5e00:24::1e]:6060/000000001000/1000000006000233001/1.m3u8
 #EXTINF:-1 ,锦州新闻
 http://stream.jzgbdst.cn/1/sd/live.m3u8?_upt=8842ef681578202947
 #EXTINF:-1 ,锦州2
