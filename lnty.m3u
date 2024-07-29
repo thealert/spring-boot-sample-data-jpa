@@ -69,7 +69,6 @@ http://my.1024.net:84/live/100041/index.m3u8
 #EXTINF:0,大湾区卫视
 http://my.1024.net:84/live/100090/index.m3u8
 
-#EXTM3U
 #EXTINF:0,CCTV1
 http://218.24.193.146:808/hls/1/index.m3u8
 #EXTINF:0,CCTV3
