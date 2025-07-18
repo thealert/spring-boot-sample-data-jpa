@@ -1,11 +1,9 @@
 #EXTM3U
 #EXTINF:-1 tvg-id="6007" tvg-name="辽宁体育" tvg-logo="http://epg.51zmt.top:8000/tb1/qt/LNTV-SPORT.png" group-title="辽宁",辽宁体育T1
-http://120.76.248.139/live/bfgd/4200000611.m3u8
+http://sh.lnott.top:880/dx22.m3u8
 #EXTINF:-1 tvg-id="6007" tvg-name="辽宁体育" tvg-logo="http://epg.51zmt.top:8000/tb1/qt/LNTV-SPORT.png" group-title="辽宁",辽宁体育T2
-http://59.47.118.242:801/hls/117/index.m3u8
+http://ygbh.site/php/bfgd.php?id=611
 #EXTINF:-1 tvg-id="6007" tvg-name="辽宁体育" tvg-logo="http://epg.51zmt.top:8000/tb1/qt/LNTV-SPORT.png" group-title="辽宁",辽宁体育T3
-http://123.189.36.39:9901/tsfile/live/1023_1.m3u8?key=txiptv&playlive=1&authid=0
-#EXTINF:-1 tvg-id="6007" tvg-name="辽宁体育" tvg-logo="http://epg.51zmt.top:8000/tb1/qt/LNTV-SPORT.png" group-title="辽宁",辽宁体育T4
 http://120.76.248.139/live/bfgd/4200000611.m3u8
 #EXTINF:-1 tvg-id="cctv5" tvg-name="CCTV5" tvg-logo="http://www.peterealty.com/tv_logos/cctv5.jpg" group-title="CCTV",CCTV5
 http://[2409:8087:5e00:24::1e]:6060/000000001000/1000000001000004794/1.m3u8
