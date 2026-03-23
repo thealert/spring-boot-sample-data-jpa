@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>连词成句</title>
+  <style>
+    :root {
+      --panel: rgba(22, 24, 32, 0.72);
+      --panel-border: rgba(255, 255, 255, 0.1);
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --chip: rgba(51, 65, 85, 0.95);
+      --chip-hi: rgba(71, 85, 105, 0.98);
+      --slot: rgba(15, 23, 42, 0.55);
+      --ok: #4ade80;
+      --bad: #fb7185;
+      --font: "SF Pro Text", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      min-height: 100dvh;
+    }
+
+    body {
+      font-family: var(--font);
+      color: var(--text);
+      -webkit-tap-highlight-color: transparent;
+      transition: background-color 0.8s ease, background-image 0.8s ease;
+      background-attachment: fixed;
+      min-height: 100dvh;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      opacity: var(--scene-overlay-opacity, 0.55);
+      background: var(--scene-overlay, radial-gradient(ellipse 80% 60% at 50% 0%, rgba(255,255,255,0.12), transparent 55%));
+      background-size: var(--scene-overlay-size, cover);
+    }
+
+    .wrap {
+      position: relative;
+      z-index: 1;
+      max-width: 560px;
+      margin: 0 auto;
+      padding: 1rem 0.9rem 2rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 0.75rem;
+    }
+
+    header h1 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin: 0 0 0.25rem;
+      text-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+    }
+
+    header p {
+      margin: 0;
+      font-size: 0.8rem;
+      color: var(--muted);
+      text-shadow: 0 1px 8px rgba(0, 0, 0, 0.4);
+    }
+
+    .stats {
+      display: flex;
+      justify-content: center;
+      gap: 1.25rem;
+      margin-bottom: 0.75rem;
+      font-size: 0.85rem;
+      text-shadow: 0 1px 6px rgba(0, 0, 0, 0.35);
+    }
+
+    .stats span {
+      color: var(--muted);
+    }
+
+    .stats strong {
+      color: var(--accent);
+    }
+
+    .zh-card {
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      border-radius: 18px;
+      padding: 1.15rem 1rem 1.25rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.25);
+      backdrop-filter: blur(12px);
+    }
+
+    .zh-label {
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .zh-text {
+      font-size: 1.12rem;
+      line-height: 1.75;
+      text-align: justify;
+      letter-spacing: 0.03em;
+    }
+
+    .work-card {
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      border-radius: 16px;
+      padding: 1rem 0.85rem 1.1rem;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.22);
+      backdrop-filter: blur(10px);
+    }
+
+    .section-label {
+      font-size: 0.72rem;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      margin-bottom: 0.5rem;
+    }
+
+    .sentence-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: stretch;
+      gap: 0.45rem;
+      min-height: 3.1rem;
+      margin-bottom: 1rem;
+    }
+
+    .slot {
+      min-width: 3.2rem;
+      min-height: 2.85rem;
+      flex: 1 1 auto;
+      max-width: 100%;
+      border-radius: 12px;
+      border: 2px dashed rgba(255, 255, 255, 0.18);
+      background: var(--slot);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.2rem;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .slot.drag-over {
+      border-color: var(--accent);
+      background: rgba(56, 189, 248, 0.12);
+    }
+
+    .slot.shake {
+      animation: shake 0.45s ease;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+
+    .bank {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      min-height: 3rem;
+      align-items: flex-start;
+      align-content: flex-start;
+      border-radius: 12px;
+      padding: 0.25rem;
+      transition: outline 0.15s, background 0.15s;
+    }
+
+    .bank.drag-over {
+      outline: 2px dashed rgba(56, 189, 248, 0.45);
+      background: rgba(56, 189, 248, 0.06);
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.45rem 0.75rem;
+      border-radius: 999px;
+      background: var(--chip);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: var(--text);
+      cursor: grab;
+      user-select: none;
+      touch-action: none;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+      transition: transform 0.12s, box-shadow 0.15s;
+    }
+
+    .chip:hover {
+      background: var(--chip-hi);
+    }
+
+    .chip.dragging {
+      cursor: grabbing;
+      z-index: 100000;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+      opacity: 0.98;
+      transition: none !important;
+      margin: 0;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-top: 0.85rem;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 999px;
+      padding: 0.5rem 1rem;
+      font-size: 0.85rem;
+      font-family: inherit;
+      cursor: pointer;
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text);
+      transition: filter 0.15s, transform 0.08s;
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #38bdf8, #0ea5e9);
+      color: #0f172a;
+      font-weight: 600;
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .feedback {
+      text-align: center;
+      min-height: 1.35rem;
+      font-size: 0.88rem;
+      margin-top: 0.65rem;
+    }
+
+    .feedback.ok {
+      color: var(--ok);
+    }
+
+    .feedback.bad {
+      color: var(--bad);
+    }
+
+    .dots {
+      display: flex;
+      justify-content: center;
+      gap: 0.3rem;
+      margin-top: 0.75rem;
+    }
+
+    .dots i {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    .dots i.done {
+      background: var(--accent);
+    }
+
+    .overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      background: rgba(15, 23, 42, 0.88);
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .overlay.show {
+      display: flex;
+    }
+
+    .modal {
+      background: rgba(30, 41, 59, 0.98);
+      border-radius: 18px;
+      padding: 1.5rem;
+      max-width: 340px;
+      width: 100%;
+      text-align: center;
+      border: 1px solid var(--panel-border);
+    }
+
+    .modal h2 {
+      margin: 0 0 0.5rem;
+      font-size: 1.2rem;
+    }
+
+    .modal p {
+      margin: 0 0 1rem;
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .modal .big {
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: var(--accent);
+      margin-bottom: 1rem;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 1.25rem;
+      font-size: 0.72rem;
+      color: var(--muted);
+      text-shadow: 0 1px 6px rgba(0, 0, 0, 0.35);
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>连词成句</h1>
+      <p>看中文意思，把下方单词拖进横线排成正确的英文句</p>
+    </header>
+
+    <div class="stats">
+      <div>得分 <strong id="score">0</strong></div>
+      <div>第 <strong id="round">1</strong> / <span id="total">8</span> 关</div>
+    </div>
+
+    <div class="zh-card">
+      <div class="zh-label">中文句意</div>
+      <div class="zh-text" id="zhLine"></div>
+    </div>
+
+    <div class="work-card">
+      <div class="section-label">英文句槽（按顺序摆放）</div>
+      <div class="sentence-row" id="sentenceRow" aria-live="polite"></div>
+      <div class="section-label">单词池（含干扰词，可拖回此处）</div>
+      <div class="bank" id="bank"></div>
+      <div class="actions">
+        <button type="button" class="btn" id="btnClear">清空槽位</button>
+        <button type="button" class="btn" id="btnHint">提示一词</button>
+        <button type="button" class="btn btn-primary" id="btnCheck" disabled>检查</button>
+      </div>
+      <div class="feedback" id="feedback"></div>
+      <div class="dots" id="dots"></div>
+    </div>
+
+    <div class="overlay" id="overlay">
+      <div class="modal">
+        <h2 id="endTitle">完成</h2>
+        <p id="endDesc"></p>
+        <div class="big" id="endScore">0</div>
+        <button type="button" class="btn btn-primary" id="btnRestart">再玩一局</button>
+      </div>
+    </div>
+
+    <footer>拖拽支持触屏 · 干扰词不必使用</footer>
+  </div>
+
+  <script>
+    (function () {
+      function svgUrl(svg) {
+        return (
+          'url("data:image/svg+xml;charset=utf-8,' +
+          encodeURIComponent(svg.replace(/\s+/g, " ").trim()) +
+          '")'
+        );
+      }
+
+      const LEVELS = [
+        {
+          zh: "海鸥飞过大海。",
+          words: ["Seagulls", "fly", "over", "the", "sea"],
+          decoy: ["run", "mountains"],
+          baseColor: "#0c1929",
+          bgImage: [
+            "linear-gradient(180deg, rgba(0,40,80,0.35) 0%, transparent 45%)",
+            svgUrl(
+              '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 120"><path fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="2" d="M60 50 Q80 40 100 50 M80 50 Q100 40 120 50"/><path fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5" d="M200 35 Q220 28 240 35"/><path fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1.5" d="M320 55 Q340 48 360 55"/></svg>'
+            ),
+            svgUrl(
+              '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 280" preserveAspectRatio="none"><path fill="rgba(125,211,252,0.2)" d="M0 180 C320 100 640 200 960 140 C1200 100 1320 160 1440 120 L1440 280 L0 280z"/><path fill="rgba(56,189,248,0.12)" d="M0 220 C400 180 800 220 1440 180 L1440 280 L0 280z"/><path fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2" d="M0 120 Q360 80 720 120 T1440 110"/></svg>'
+            ),
+            "linear-gradient(165deg, #0e7490 0%, #0369a1 38%, #0c4a6e 72%, #0f172a 100%)"
+          ].join(", "),
+          bgSize: "auto, 520px 90px, 100% 55%, cover",
+          bgPosition: "center, 18% 8%, center bottom, center",
+          bgRepeat: "no-repeat, no-repeat, no-repeat, no-repeat",
+          overlay:
+            "repeating-linear-gradient(135deg, transparent, transparent 40px, rgba(255,255,255,0.02) 40px, rgba(255,255,255,0.02) 42px), radial-gradient(ellipse 90% 50% at 50% -5%, rgba(125,211,252,0.35), transparent 55%)",
+          overlayOpacity: "0.5"
+        },
+        {
+          zh: "月亮照在湖面上。",
+          words: ["The", "moon", "shines", "on", "the", "lake"],
+          decoy: ["sun", "dark"],
+          baseColor: "#0f0a1a",
+          bgImage: [
+            "linear-gradient(180deg, rgba(30,27,75,0.6) 0%, transparent 55%)",
+            svgUrl(
+              '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400"><circle cx="300" cy="90" r="42" fill="rgba(254,249,195,0.35)"/><circle cx="300" cy="90" r="36" fill="rgba(254,240,138,0.25)"/></svg>'
+            ),
+            svgUrl(
+              '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200"><ellipse cx="400" cy="120" rx="380" ry="60" fill="rgba(30,58,138,0.35)"/><ellipse cx="400" cy="130" rx="360" ry="40" fill="rgba(59,130,246,0.15)"/></svg>'
+            ),
+            svgUrl(
+              '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 200"><circle cx="80" cy="40" r="1.2" fill="white"/><circle cx="140" cy="25" r="0.8" fill="white"/><circle cx="220" cy="55" r="1" fill="white"/><circle cx="400" cy="30" r="1.1" fill="white"/><circle cx="500" cy="70" r="0.7" fill="white"/></svg>'
+            ),
+            "linear-gradient(160deg, #1e1b4b 0%, #312e81 42%, #1e293b 100%)"
+          ].join(", "),
+          bgSize: "cover, 280px 280px, 100% 45%, 600px 200px, cover",
+          bgPosition: "center, 78% 6%, center 85%, 20% 12%, center",
+          bgRepeat: "no-repeat, no-repeat, no-repeat, no-repeat, no-repeat",
+          overlay: "radial-gradient(ellipse 70% 40% at 75% 15%, rgba(254,249,195,0.2), transparent 50%)",
+          overlayOpacity: "0.55"
+        },
+        {
+          zh: "松鼠爬上大树。",
+          words: ["The", "squirrel", "climbs", "the", "big", "tree"],
+          decoy: ["slowly", "fish"],
+          baseColor: "#052e16",
+          bgImage: [
+            svgUrl(
+              '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240"><polygon fill="rgba(22,101,52,0.9)" points="100,10 40,200 160,200"/><polygon fill="rgba(21,128,61,0.85)" points="100,50 55,200 145,200"/></svg>'
+            ),
+            svgUrl(
+              '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240"><polygon fill="rgba(20,83,45,0.75)" points="100,30 50,200 150,200"/></svg>'
+            ),
+            svgUrl(
+              '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 120"><ellipse cx="400" cy="100" rx="400" ry="40" fill="rgba(20,83,45,0.5)"/></svg>'
+            ),
+            "linear-gradient(175deg, #166534 0%, #14532d 50%, #052e16 100%)"
+          ].join(", "),
+          bgSize: "120px 200px, 100px 220px, 100% 35%, cover",
+          bgPosition: "12% 100%, 88% 100%, center bottom, center",
+          bgRepeat: "no-repeat, no-repeat, no-repeat, no-repeat",
+          overlay:
+            "radial-gradient(ellipse 100% 60% at 50% 0%, rgba(187,247,208,0.25), transparent 55%), linear-gradient(180deg, rgba(34,197,94,0.12), transparent 40%)",
+          overlayOpacity: "0.45"
+        },
+        {
+          zh: "早餐我喝咖啡。",
+          words: ["I", "drink", "coffee", "for", "breakfast"],
+          decoy: ["tea", "sleep"],
+          baseColor: "#1c1410",
+          bgImage: [
+            svgUrl(
+              '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><path fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="2" d="M70 160 Q90 120 85 90 Q80 60 95 40"/><path fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="2" d="M100 165 Q115 130 110 95 Q105 65 118 45"/></svg>'
+            ),
+            svgUrl(
+              '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 200"><ellipse cx="120" cy="130" rx="70" ry="45" fill="rgba(120,53,15,0.5)"/><rect x="95" y="85" width="50" height="50" rx="8" fill="rgba(69,26,3,0.6)"/></svg>'
+            ),
+            "radial-gradient(ellipse 80% 50% at 50% 0%, rgba(251,191,36,0.35), transparent 55%)",
+            "linear-gradient(180deg, #78350f 0%, #451a03 45%, #1c1917 100%)"
+          ].join(", "),
+          bgSize: "180px 180px, 240px 200px, cover, cover",
+          bgPosition: "70% 15%, 50% 75%, center top, center",
+          bgRepeat: "no-repeat, no-repeat, no-repeat, no-repeat",
+          overlay: "radial-gradient(circle at 50% 20%, rgba(254,215,170,0.2), transparent 45%)",
+          overlayOpacity: "0.5"
+        },
+        {
+          zh: "火车穿过隧道。",
+          words: ["The", "train", "goes", "through", "the", "tunnel"],
+          decoy: ["car", "sky"],
+          baseColor: "#111827",
+          bgImage: [
+            svgUrl(
+              '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300"><ellipse cx="200" cy="150" rx="160" ry="130" fill="none" stroke="rgba(75,85,99,0.8)" stroke-width="24"/><ellipse cx="200" cy="150" rx="120" ry="100" fill="#030712"/><ellipse cx="200" cy="150" rx="90" ry="75" fill="rgba(250,204,21,0.35)"/></svg>'
+            ),
+            "linear-gradient(105deg, transparent 35%, rgba(250,204,21,0.25) 50%, transparent 65%)",
+            "linear-gradient(185deg, #374151 0%, #1f2937 40%, #030712 100%)"
+          ].join(", "),
+          bgSize: "min(90vw, 420px) auto, cover, cover",
+          bgPosition: "center 55%, center, center",
+          bgRepeat: "no-repeat, no-repeat, no-repeat",
+          overlay: "linear-gradient(90deg, rgba(0,0,0,0.4) 0%, transparent 30%, transparent 70%, rgba(0,0,0,0.4) 100%)",
+          overlayOpacity: "0.4"
+        },
+        {
+          zh: "我们在沙滩上玩。",
+          words: ["We", "play", "on", "the", "sand"],
+          decoy: ["snow", "home"],
+          baseColor: "#431407",
+          bgImage: [
+            svgUrl(
+              '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><circle cx="100" cy="60" r="35" fill="rgba(253,224,71,0.45)"/><circle cx="100" cy="65" r="28" fill="rgba(251,191,36,0.35)"/></svg>'
+            ),
+            svgUrl(
+              '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 100"><path fill="rgba(254,215,170,0.35)" d="M0 40 Q200 20 400 40 T800 35 L800 100 L0 100z"/></svg>'
+            ),
+            "linear-gradient(180deg, rgba(56,189,248,0.35) 0%, rgba(14,165,233,0.2) 35%, transparent 55%)",
+            "linear-gradient(175deg, #fbbf24 0%, #ea580c 35%, #9a3412 70%, #1c1917 100%)"
+          ].join(", "),
+          bgSize: "200px 200px, 100% 120px, cover, cover",
+          bgPosition: "80% 5%, center 42%, center top, center",
+          bgRepeat: "no-repeat, no-repeat, no-repeat, no-repeat",
+          overlay: "radial-gradient(ellipse 100% 70% at 50% 100%, rgba(254,215,170,0.35), transparent 50%)",
+          overlayOpacity: "0.45"
+        },
+        {
+          zh: "图书馆很安静。",
+          words: ["The", "library", "is", "very", "quiet"],
+          decoy: ["loud", "park"],
+          baseColor: "#1e293b",
+          bgImage: [
+            svgUrl(
+              '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300"><rect x="20" y="20" width="50" height="260" fill="rgba(71,85,105,0.4)"/><rect x="80" y="40" width="45" height="240" fill="rgba(51,65,85,0.5)"/><rect x="135" y="30" width="48" height="250" fill="rgba(71,85,105,0.45)"/><rect x="190" y="50" width="44" height="230" fill="rgba(51,65,85,0.5)"/><rect x="245" y="25" width="50" height="255" fill="rgba(71,85,105,0.4)"/></svg>'
+            ),
+            "linear-gradient(180deg, rgba(15,23,42,0.5) 0%, transparent 40%)",
+            "linear-gradient(165deg, #475569 0%, #334155 50%, #0f172a 100%)"
+          ].join(", "),
+          bgSize: "min(95vw, 400px) auto, cover, cover",
+          bgPosition: "center 60%, center, center",
+          bgRepeat: "no-repeat, no-repeat, no-repeat",
+          overlay: "radial-gradient(ellipse 80% 50% at 50% 0%, rgba(148,163,184,0.2), transparent 55%)",
+          overlayOpacity: "0.5"
+        },
+        {
+          zh: "雨后有彩虹。",
+          words: ["A", "rainbow", "comes", "after", "rain"],
+          decoy: ["sun", "wind"],
+          baseColor: "#172554",
+          bgImage: [
+            svgUrl(
+              '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200"><defs><linearGradient id="r" x1="0" x2="1"><stop offset="0" stop-color="#ef4444"/><stop offset="0.2" stop-color="#f97316"/><stop offset="0.4" stop-color="#eab308"/><stop offset="0.55" stop-color="#22c55e"/><stop offset="0.7" stop-color="#3b82f6"/><stop offset="0.85" stop-color="#8b5cf6"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs><path fill="none" stroke="url(#r)" stroke-width="14" stroke-linecap="round" d="M40 180 A160 160 0 0 1 360 180"/></svg>'
+            ),
+            svgUrl(
+              '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 160"><path fill="rgba(21,128,61,0.7)" d="M0 160 L80 60 L160 160 Z"/><path fill="rgba(22,101,52,0.75)" d="M200 160 L280 50 L360 160 Z"/></svg>'
+            ),
+            "linear-gradient(180deg, rgba(59,130,246,0.4) 0%, rgba(147,197,253,0.15) 45%, transparent 70%)",
+            "linear-gradient(180deg, #4c1d95 0%, #5b21b6 25%, #2563eb 55%, #0ea5e9 85%, #0369a1 100%)"
+          ].join(", "),
+          bgSize: "min(95vw, 420px) auto, 100% 45%, cover, cover",
+          bgPosition: "center 75%, center bottom, center top, center",
+          bgRepeat: "no-repeat, no-repeat, no-repeat, no-repeat",
+          overlay: "linear-gradient(180deg, rgba(255,255,255,0.08), transparent 35%)",
+          overlayOpacity: "0.4"
+        }
+      ];
+
+      let levelIndex = 0;
+      let score = 0;
+      let chipSeq = 0;
+      let locked = false;
+      let hintsUsed = 0;
+
+      const chips = {};
+
+      const el = {
+        zhLine: document.getElementById("zhLine"),
+        sentenceRow: document.getElementById("sentenceRow"),
+        bank: document.getElementById("bank"),
+        feedback: document.getElementById("feedback"),
+        score: document.getElementById("score"),
+        round: document.getElementById("round"),
+        total: document.getElementById("total"),
+        btnCheck: document.getElementById("btnCheck"),
+        btnClear: document.getElementById("btnClear"),
+        btnHint: document.getElementById("btnHint"),
+        dots: document.getElementById("dots"),
+        overlay: document.getElementById("overlay"),
+        endTitle: document.getElementById("endTitle"),
+        endDesc: document.getElementById("endDesc"),
+        endScore: document.getElementById("endScore"),
+        btnRestart: document.getElementById("btnRestart")
+      };
+
+      let dragState = null;
+
+      function shuffle(arr) {
+        const a = arr.slice();
+        for (let i = a.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+      }
+
+      function applyScene(level) {
+        document.body.style.backgroundColor = level.baseColor || "#0f172a";
+        document.body.style.backgroundImage = level.bgImage;
+        document.body.style.backgroundSize = level.bgSize;
+        document.body.style.backgroundPosition = level.bgPosition;
+        document.body.style.backgroundRepeat = level.bgRepeat;
+        document.documentElement.style.setProperty("--scene-overlay", level.overlay || "transparent");
+        document.documentElement.style.setProperty(
+          "--scene-overlay-opacity",
+          level.overlayOpacity != null ? String(level.overlayOpacity) : "0.5"
+        );
+        document.documentElement.style.setProperty("--scene-overlay-size", level.overlaySize || "cover");
+      }
+
+      function makeChip(text) {
+        const id = "c" + chipSeq++;
+        chips[id] = { id: id, text: text };
+        const d = document.createElement("div");
+        d.className = "chip";
+        d.textContent = text;
+        d.dataset.chipId = id;
+        d.addEventListener("pointerdown", onChipPointerDown);
+        return d;
+      }
+
+      function clearChipsMap() {
+        for (const k in chips) delete chips[k];
+        chipSeq = 0;
+      }
+
+      function slotCount() {
+        return LEVELS[levelIndex].words.length;
+      }
+
+      function filledCount() {
+        return el.sentenceRow.querySelectorAll(".slot .chip").length;
+      }
+
+      function updateCheckBtn() {
+        el.btnCheck.disabled = locked || filledCount() !== slotCount();
+      }
+
+      function setFeedback(t, kind) {
+        el.feedback.textContent = t;
+        el.feedback.className = "feedback" + (kind ? " " + kind : "");
+      }
+
+      function renderDots() {
+        el.dots.innerHTML = "";
+        for (let i = 0; i < LEVELS.length; i++) {
+          const dot = document.createElement("i");
+          if (i < levelIndex) dot.classList.add("done");
+          el.dots.appendChild(dot);
+        }
+      }
+
+      function placeChipIn(elParent, chipEl) {
+        const existing = elParent.querySelector(".chip");
+        if (existing && existing !== chipEl) {
+          el.bank.appendChild(existing);
+        }
+        elParent.appendChild(chipEl);
+      }
+
+      function onChipPointerDown(e) {
+        if (locked) return;
+        const chip = e.target.closest(".chip");
+        if (!chip) return;
+        e.preventDefault();
+        const rect = chip.getBoundingClientRect();
+        const offsetX = e.clientX - rect.left;
+        const offsetY = e.clientY - rect.top;
+        dragState = {
+          chip: chip,
+          offsetX: offsetX,
+          offsetY: offsetY,
+          from: chip.parentElement
+        };
+        chip.classList.add("dragging");
+        document.body.appendChild(chip);
+        chip.style.cssText =
+          "position:fixed;left:" +
+          rect.left +
+          "px;top:" +
+          rect.top +
+          "px;width:" +
+          rect.width +
+          "px;min-width:" +
+          rect.width +
+          "px;height:" +
+          rect.height +
+          "px;box-sizing:border-box;margin:0;pointer-events:none;z-index:100000;";
+        try {
+          chip.setPointerCapture(e.pointerId);
+        } catch (err) {}
+        window.addEventListener("pointermove", onChipPointerMove);
+        window.addEventListener("pointerup", onChipPointerUp);
+        window.addEventListener("pointercancel", onChipPointerUp);
+      }
+
+      function onChipPointerMove(e) {
+        if (!dragState) return;
+        const d = dragState;
+        d.chip.style.left = e.clientX - d.offsetX + "px";
+        d.chip.style.top = e.clientY - d.offsetY + "px";
+        document.querySelectorAll(".slot").forEach(function (s) {
+          s.classList.remove("drag-over");
+        });
+        const under = elementUnderPointer(e.clientX, e.clientY);
+        const slot = under && under.closest(".slot");
+        if (slot) slot.classList.add("drag-over");
+        const bank = under && under.closest("#bank");
+        if (bank) el.bank.classList.add("drag-over");
+        else el.bank.classList.remove("drag-over");
+      }
+
+      function elementUnderPointer(x, y) {
+        return document.elementFromPoint(x, y);
+      }
+
+      function onChipPointerUp(e) {
+        if (!dragState) return;
+        const d = dragState;
+        const chip = d.chip;
+        try {
+          chip.releasePointerCapture(e.pointerId);
+        } catch (err) {}
+        window.removeEventListener("pointermove", onChipPointerMove);
+        window.removeEventListener("pointerup", onChipPointerUp);
+        window.removeEventListener("pointercancel", onChipPointerUp);
+
+        document.querySelectorAll(".slot").forEach(function (s) {
+          s.classList.remove("drag-over");
+        });
+        el.bank.classList.remove("drag-over");
+
+        const under = document.elementFromPoint(e.clientX, e.clientY);
+        chip.classList.remove("dragging");
+        chip.style.cssText = "";
+
+        const slot = under && under.closest(".slot");
+        const bankHit = under && (under.closest("#bank") || under.id === "bank");
+
+        if (slot) {
+          placeChipIn(slot, chip);
+        } else if (bankHit) {
+          el.bank.appendChild(chip);
+        } else {
+          (d.from || el.bank).appendChild(chip);
+        }
+
+        dragState = null;
+        setFeedback("");
+        updateCheckBtn();
+      }
+
+      function collectAnswer() {
+        const slots = el.sentenceRow.querySelectorAll(".slot");
+        const out = [];
+        slots.forEach(function (s) {
+          const c = s.querySelector(".chip");
+          out.push(c ? chips[c.dataset.chipId].text : null);
+        });
+        return out;
+      }
+
+      function checkAnswer() {
+        if (locked) return;
+        const ans = collectAnswer();
+        const target = LEVELS[levelIndex].words;
+        const ok = ans.every(function (w, i) {
+          return w === target[i];
+        });
+        locked = true;
+        if (ok) {
+          const bonus = Math.max(0, 4 - hintsUsed);
+          const pts = 15 + bonus * 2;
+          score += pts;
+          el.score.textContent = String(score);
+          setFeedback("太棒了！+" + pts + " 分", "ok");
+          setTimeout(nextLevel, 850);
+        } else {
+          setFeedback("顺序或选词不对，可拖回单词池重排", "bad");
+          el.sentenceRow.querySelectorAll(".slot").forEach(function (s) {
+            s.classList.add("shake");
+          });
+          setTimeout(function () {
+            el.sentenceRow.querySelectorAll(".slot").forEach(function (s) {
+              s.classList.remove("shake");
+            });
+            locked = false;
+            updateCheckBtn();
+            setFeedback("");
+          }, 550);
+        }
+      }
+
+      function nextLevel() {
+        levelIndex++;
+        hintsUsed = 0;
+        locked = false;
+        if (levelIndex >= LEVELS.length) {
+          locked = true;
+          el.endTitle.textContent = "全部通关";
+          el.endDesc.textContent = "你已经把每句英文都排对了。";
+          el.endScore.textContent = String(score);
+          el.overlay.classList.add("show");
+          return;
+        }
+        loadLevel();
+      }
+
+      function loadLevel() {
+        clearChipsMap();
+        const L = LEVELS[levelIndex];
+        applyScene(L);
+        el.zhLine.textContent = L.zh;
+        el.total.textContent = String(LEVELS.length);
+        el.round.textContent = String(levelIndex + 1);
+        el.sentenceRow.innerHTML = "";
+        el.bank.innerHTML = "";
+        for (let i = 0; i < L.words.length; i++) {
+          const slot = document.createElement("div");
+          slot.className = "slot";
+          slot.dataset.index = String(i);
+          el.sentenceRow.appendChild(slot);
+        }
+        const pool = shuffle(L.words.concat(L.decoy || []));
+        pool.forEach(function (w) {
+          el.bank.appendChild(makeChip(w));
+        });
+        setFeedback("");
+        locked = false;
+        updateCheckBtn();
+        renderDots();
+      }
+
+      function resetGame() {
+        levelIndex = 0;
+        score = 0;
+        hintsUsed = 0;
+        el.score.textContent = "0";
+        el.overlay.classList.remove("show");
+        loadLevel();
+      }
+
+      el.btnCheck.addEventListener("click", checkAnswer);
+
+      el.btnClear.addEventListener("click", function () {
+        if (locked) return;
+        el.sentenceRow.querySelectorAll(".slot .chip").forEach(function (c) {
+          el.bank.appendChild(c);
+        });
+        setFeedback("");
+        updateCheckBtn();
+      });
+
+      el.btnHint.addEventListener("click", function () {
+        if (locked) return;
+        const target = LEVELS[levelIndex].words;
+        const slots = el.sentenceRow.querySelectorAll(".slot");
+        let k = -1;
+        for (let i = 0; i < target.length; i++) {
+          const c = slots[i].querySelector(".chip");
+          const got = c ? chips[c.dataset.chipId].text : null;
+          if (got !== target[i]) {
+            k = i;
+            break;
+          }
+        }
+        if (k < 0) return;
+        const want = target[k];
+        let donor = null;
+        el.bank.querySelectorAll(".chip").forEach(function (c) {
+          if (chips[c.dataset.chipId].text === want && !donor) donor = c;
+        });
+        if (!donor) {
+          slots.forEach(function (s, i) {
+            if (i !== k && !donor) {
+              const c = s.querySelector(".chip");
+              if (c && chips[c.dataset.chipId].text === want) donor = c;
+            }
+          });
+        }
+        if (!donor) return;
+        hintsUsed++;
+        placeChipIn(slots[k], donor);
+        setFeedback("已放入第 " + (k + 1) + " 个词（得分奖励减少）", "");
+        updateCheckBtn();
+      });
+
+      el.btnRestart.addEventListener("click", resetGame);
+
+      loadLevel();
+    })();
+  </script>
+</body>
+</html>
